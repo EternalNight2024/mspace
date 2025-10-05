@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MSpace - 探索你的魔法空间</title>
+    <!-- 引入Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- 引入Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    
+    <!-- Tailwind配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6D28D9', // 深紫色作为主色调，代表神秘和魔法
+                        secondary: '#EC4899', // 亮粉色作为辅助色，增加活力
+                        accent: '#06B6D4', // 亮蓝色作为强调色
+                        dark: '#1E1B4B', // 深蓝色作为暗色调
+                        light: '#F5F3FF', // 浅紫色作为亮色调
+                    },
+                    fontFamily: {
+                        magic: ['Cormorant Garamond', 'serif'],
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        },
+                        glow: {
+                            '0%': { boxShadow: '0 0 5px rgba(109, 40, 217, 0.5), 0 0 10px rgba(109, 40, 217, 0.3)' },
+                            '100%': { boxShadow: '0 0 10px rgba(109, 40, 217, 0.8), 0 0 20px rgba(109, 40, 217, 0.5), 0 0 30px rgba(109, 40, 217, 0.3)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow {
+                text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            }
+            .text-shadow-glow {
+                text-shadow: 0 0 10px rgba(109, 40, 217, 0.7), 0 0 20px rgba(109, 40, 217, 0.4);
+            }
+            .bg-magic-gradient {
+                background: linear-gradient(135deg, #1E1B4B 0%, #4C1D95 50%, #1E1B4B 100%);
+            }
+            .bg-glass {
+                background: rgba(255, 255, 255, 0.1);
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+            }
+        }
+    </style>
+    
+    <!-- 引入Google字体 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body class="bg-gray-900 text-light font-sans overflow-x-hidden">
+    <!-- 粒子背景 -->
+    <div id="particles-js" class="fixed inset-0 z-0 opacity-30"></div>
+    
+    <!-- 导航栏 -->
+    <header class="fixed top-0 left-0 right-0 z-50 transition-all duration-300" id="navbar">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center bg-glass rounded-b-xl">
+            <a href="#" class="flex items-center space-x-2">
+                <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center animate-pulse-slow">
+                    <span class="text-white font-magic font-bold text-xl">M</span>
+                </div>
+                <span class="text-xl font-magic font-bold text-shadow-glow">MSpace</span>
+            </a>
+            
+            <!-- 桌面导航 -->
+            <nav class="hidden md:flex items-center space-x-8">
+                <a href="#features" class="hover:text-secondary transition-colors duration-300">魔法功能</a>
+                <a href="#experience" class="hover:text-secondary transition-colors duration-300">探索体验</a>
+                <a href="#community" class="hover:text-secondary transition-colors duration-300">魔法师社区</a>
+                <a href="#" class="bg-primary hover:bg-primary/80 text-white px-6 py-2 rounded-full transition-all duration-300 hover:shadow-lg hover:shadow-primary/30">
+                    开始魔法之旅
+                </a>
+            </nav>
+            
+            <!-- 移动端菜单按钮 -->
+            <button class="md:hidden text-2xl" id="menuBtn">
+                <i class="fa fa-bars"></i>
+            </button>
+        </div>
+        
+        <!-- 移动端导航菜单 -->
+        <div class="md:hidden bg-dark/95 backdrop-blur-lg absolute w-full left-0 top-full transform -translate-y-full opacity-0 transition-all duration-300 pointer-events-none" id="mobileMenu">
+            <div class="container mx-auto px-4 py-4 flex flex-col space-y-4">
+                <a href="#features" class="py-2 hover:text-secondary transition-colors duration-300">魔法功能</a>
+                <a href="#experience" class="py-2 hover:text-secondary transition-colors duration-300">探索体验</a>
+                <a href="#community" class="py-2 hover:text-secondary transition-colors duration-300">魔法师社区</a>
+                <a href="#" class="bg-primary hover:bg-primary/80 text-white px-6 py-3 rounded-full text-center transition-all duration-300">
+                    开始魔法之旅
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- 英雄区域 -->
+        <section class="min-h-screen pt-24 pb-16 relative flex items-center">
+            <div class="container mx-auto px-4 z-10">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    <div class="space-y-8">
+                        <div class="inline-block bg-primary/20 px-4 py-1 rounded-full text-primary border border-primary/30">
+                            欢迎来到魔法的世界
+                        </div>
+                        <h1 class="text-[clamp(2.5rem,6vw,4.5rem)] font-magic font-bold leading-tight text-shadow-glow">
+                            释放你的<br><span class="text-secondary">魔法潜能</span>
+                        </h1>
+                        <p class="text-lg text-gray-300 max-w-xl">
+                            MSpace是你的专属魔法空间，在这里你可以探索神秘领域、学习古老咒语、结交魔法伙伴，开启一段不可思议的旅程。
+                        </p>
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <a href="#" class="bg-primary hover:bg-primary/80 text-white px-8 py-4 rounded-full text-center transition-all duration-300 hover:shadow-lg hover:shadow-primary/30 text-lg font-medium animate-glow">
+                                进入魔法空间
+                            </a>
+                            <a href="#" class="bg-transparent border border-white/30 hover:border-white text-white px-8 py-4 rounded-full text-center transition-all duration-300 hover:bg-white/10 text-lg font-medium">
+                                了解更多 <i class="fa fa-arrow-right ml-2"></i>
+                            </a>
+                        </div>
+                        <div class="flex items-center space-x-6 pt-4">
+                            <div class="flex -space-x-2">
+                                <img src="https://picsum.photos/id/64/100/100" alt="魔法师头像" class="w-10 h-10 rounded-full border-2 border-dark">
+                                <img src="https://picsum.photos/id/65/100/100" alt="魔法师头像" class="w-10 h-10 rounded-full border-2 border-dark">
+                                <img src="https://picsum.photos/id/66/100/100" alt="魔法师头像" class="w-10 h-10 rounded-full border-2 border-dark">
+                                <div class="w-10 h-10 rounded-full border-2 border-dark bg-primary flex items-center justify-center text-xs">
+                                    +2k
+                                </div>
+                            </div>
+                            <div class="text-sm text-gray-300">
+                                <span class="text-white font-semibold">2,000+</span> 魔法师已加入
+                            </div>
+                        </div>
+                    </div>
+                    <div class="relative">
+                        <div class="absolute inset-0 bg-gradient-to-r from-primary/30 to-secondary/30 rounded-full blur-3xl opacity-50 animate-pulse-slow"></div>
+                        <div class="relative rounded-2xl overflow-hidden border border-white/10 shadow-xl animate-float">
+                            <img src="https://picsum.photos/id/110/800/600" alt="魔法空间场景" class="w-full h-auto">
+                            <div class="absolute inset-0 bg-gradient-to-t from-dark to-transparent"></div>
+                            <div class="absolute bottom-0 left-0 right-0 p-6">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <h3 class="font-magic text-2xl font-bold">神秘图书馆</h3>
+                                        <p class="text-gray-300">发现数千本魔法典籍</p>
+                                    </div>
+                                    <div class="bg-primary/80 backdrop-blur-sm p-3 rounded-full">
+                                        <i class="fa fa-book text-white"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 悬浮元素 -->
+                        <div class="absolute -top-6 -left-6 bg-dark/80 backdrop-blur-md p-4 rounded-xl border border-white/10 shadow-lg animate-float" style="animation-delay: 1s;">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center text-accent">
+                                    <i class="fa fa-star"></i>
+                                </div>
+                                <div>
+                                    <div class="text-sm text-gray-300">魔法等级</div>
+                                    <div class="font-medium">进阶魔法师</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="absolute -bottom-4 -right-4 bg-dark/80 backdrop-blur-md p-4 rounded-xl border border-white/10 shadow-lg animate-float" style="animation-delay: 2s;">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 rounded-full bg-secondary/20 flex items-center justify-center text-secondary">
+                                    <i class="fa fa-magic"></i>
+                                </div>
+                                <div>
+                                    <div class="text-sm text-gray-300">已解锁咒语</div>
+                                    <div class="font-medium">47 个</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 装饰元素 -->
+            <div class="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-gray-900 to-transparent"></div>
+            <div class="absolute top-1/4 left-10 w-20 h-20 rounded-full bg-primary/20 blur-3xl"></div>
+            <div class="absolute bottom-1/3 right-20 w-32 h-32 rounded-full bg-secondary/20 blur-3xl"></div>
+        </section>
+        
+        <!-- 特色功能 -->
+        <section id="features" class="py-20 relative">
+            <div class="container mx-auto px-4">
+                <div class="text-center max-w-3xl mx-auto mb-16">
+                    <div class="inline-block bg-primary/20 px-4 py-1 rounded-full text-primary border border-primary/30 mb-4">
+                        魔法能力
+                    </div>
+                    <h2 class="text-[clamp(1.8rem,4vw,3rem)] font-magic font-bold mb-6 text-shadow">
+                        探索你的<span class="text-secondary">魔法潜能</span>
+                    </h2>
+                    <p class="text-gray-300 text-lg">
+                        在MSpace中，你可以解锁各种神奇能力，发现魔法世界的无限可能
+                    </p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- 功能卡片1 -->
+                    <div class="bg-dark/50 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 group">
+                        <div class="w-14 h-14 rounded-xl bg-primary/20 flex items-center justify-center text-primary text-2xl mb-6 group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                            <i class="fa fa-book"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3 font-magic">魔法典籍库</h3>
+                        <p class="text-gray-400 mb-4">
+                            探索数千本古老魔法典籍，学习各种咒语和魔法知识，提升你的魔法等级。
+                        </p>
+                        <a href="#" class="inline-flex items-center text-primary hover:text-secondary transition-colors duration-300">
+                            探索典籍 <i class="fa fa-arrow-right ml-2 group-hover:ml-3 transition-all duration-300"></i>
+                        </a>
+                    </div>
+                    
+                    <!-- 功能卡片2 -->
+                    <div class="bg-dark/50 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 group">
+                        <div class="w-14 h-14 rounded-xl bg-primary/20 flex items-center justify-center text-primary text-2xl mb-6 group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                            <i class="fa fa-users"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3 font-magic">魔法社群</h3>
+                        <p class="text-gray-400 mb-4">
+                            结交来自世界各地的魔法师，分享你的魔法经验，一起完成魔法任务。
+                        </p>
+                        <a href="#" class="inline-flex items-center text-primary hover:text-secondary transition-colors duration-300">
+                            加入社群 <i class="fa fa-arrow-right ml-2 group-hover:ml-3 transition-all duration-300"></i>
+                        </a>
+                    </div>
+                    
+                    <!-- 功能卡片3 -->
+                    <div class="bg-dark/50 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 group">
+                        <div class="w-14 h-14 rounded-xl bg-primary/20 flex items-center justify-center text-primary text-2xl mb-6 group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                            <i class="fa fa-flask"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3 font-magic">魔法实验室</h3>
+                        <p class="text-gray-400 mb-4">
+                            在安全的环境中练习你的魔法技能，尝试组合不同咒语，创造全新魔法效果。
+                        </p>
+                        <a href="#" class="inline-flex items-center text-primary hover:text-secondary transition-colors duration-300">
+                            进入实验室 <i class="fa fa-arrow-right ml-2 group-hover:ml-3 transition-all duration-300"></i>
+                        </a>
+                    </div>
+                    
+                    <!-- 功能卡片4 -->
+                    <div class="bg-dark/50 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 group">
+                        <div class="w-14 h-14 rounded-xl bg-primary/20 flex items-center justify-center text-primary text-2xl mb-6 group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                            <i class="fa fa-map-o"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3 font-magic">神秘地图</h3>
+                        <p class="text-gray-400 mb-4">
+                            探索魔法世界的神秘地点，发现隐藏的宝藏和秘密，解锁特殊魔法能力。
+                        </p>
+                        <a href="#" class="inline-flex items-center text-primary hover:text-secondary transition-colors duration-300">
+                            查看地图 <i class="fa fa-arrow-right ml-2 group-hover:ml-3 transition-all duration-300"></i>
+                        </a>
+                    </div>
+                    
+                    <!-- 功能卡片5 -->
+                    <div class="bg-dark/50 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 group">
+                        <div class="w-14 h-14 rounded-xl bg-primary/20 flex items-center justify-center text-primary text-2xl mb-6 group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                            <i class="fa fa-puzzle-piece"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3 font-magic">魔法任务</h3>
+                        <p class="text-gray-400 mb-4">
+                            完成各种魔法任务，获取魔法奖励，提升你的魔法声望，解锁更多权限。
+                        </p>
+                        <a href="#" class="inline-flex items-center text-primary hover:text-secondary transition-colors duration-300">
+                            查看任务 <i class="fa fa-arrow-right ml-2 group-hover:ml-3 transition-all duration-300"></i>
+                        </a>
+                    </div>
+                    
+                    <!-- 功能卡片6 -->
+                    <div class="bg-dark/50 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 group">
+                        <div class="w-14 h-14 rounded-xl bg-primary/20 flex items-center justify-center text-primary text-2xl mb-6 group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                            <i class="fa fa-shield"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3 font-magic">魔法保护</h3>
+                        <p class="text-gray-400 mb-4">
+                            获取专属魔法护盾，保护你的魔法空间免受黑暗魔法的侵扰，确保安全。
+                        </p>
+                        <a href="#" class="inline-flex items-center text-primary hover:text-secondary transition-colors duration-300">
+                            激活护盾 <i class="fa fa-arrow-right ml-2 group-hover:ml-3 transition-all duration-300"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 探索体验 -->
+        <section id="experience" class="py-20 bg-magic-gradient relative overflow-hidden">
+            <div class="container mx-auto px-4 relative z-10">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                    <div class="order-2 lg:order-1">
+                        <div class="relative">
+                            <div class="absolute inset-0 bg-gradient-to-r from-primary/50 to-secondary/50 rounded-2xl blur-3xl opacity-30 animate-pulse-slow"></div>
+                            <div class="relative">
+                                <img src="https://picsum.photos/id/119/800/600" alt="魔法体验" class="w-full h-auto rounded-2xl shadow-2xl">
+                                
+                                <!-- 悬浮数据卡片 -->
+                                <div class="absolute -bottom-6 -right-6 bg-dark/90 backdrop-blur-lg p-6 rounded-xl border border-white/10 shadow-xl max-w-[280px]">
+                                    <div class="flex justify-between items-start mb-4">
+                                        <div>
+                                            <h4 class="font-medium">魔法能量指数</h4>
+                                            <p class="text-gray-400 text-sm">本周增长情况</p>
+                                        </div>
+                                        <div class="bg-green-500/20 text-green-400 px-2 py-1 rounded text-xs">
+                                            +12.5%
+                                        </div>
+                                    </div>
+                                    <div class="h-24">
+                                        <canvas id="magicChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="order-1 lg:order-2 space-y-6">
+                        <div class="inline-block bg-white/10 px-4 py-1 rounded-full text-white border border-white/20">
+                            沉浸式体验
+                        </div>
+                        <h2 class="text-[clamp(1.8rem,4vw,3rem)] font-magic font-bold text-shadow">
+                            体验<span class="text-secondary">魔法的力量</span>
+                        </h2>
+                        <p class="text-gray-300 text-lg">
+                            在MSpace中，你将体验到前所未有的魔法世界。通过我们独特的魔法感应技术，你可以真实地感受到魔法能量的流动，学习并掌握各种神奇的魔法技能。
+                        </p>
+                        
+                        <div class="space-y-4">
+                            <div class="flex items-start space-x-4">
+                                <div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary shrink-0 mt-1">
+                                    <i class="fa fa-check"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-lg mb-1">个性化魔法学习</h4>
+                                    <p class="text-gray-400">根据你的学习进度和兴趣，为你推荐最适合的魔法课程和练习。</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start space-x-4">
+                                <div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary shrink-0 mt-1">
+                                    <i class="fa fa-check"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-lg mb-1">实时魔法能量监测</h4>
+                                    <p class="text-gray-400">追踪你的魔法能量变化，了解自己的魔法潜能和进步情况。</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start space-x-4">
+                                <div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary shrink-0 mt-1">
+                                    <i class="fa fa-check"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-lg mb-1">互动式魔法实践</h4>
+                                    <p class="text-gray-400">通过虚拟现实技术，在安全的环境中实践各种魔法，获得真实的反馈。</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <a href="#" class="inline-block bg-secondary hover:bg-secondary/80 text-white px-8 py-4 rounded-full transition-all duration-300 hover:shadow-lg hover:shadow-secondary/30 text-lg font-medium mt-4">
+                            开始体验 <i class="fa fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 背景装饰 -->
+            <div class="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10">
+                <div class="absolute top-10 left-10 w-64 h-64 rounded-full border border-white/30"></div>
+                <div class="absolute bottom-20 right-20 w-96 h-96 rounded-full border border-white/20"></div>
+                <div class="absolute top-1/2 left-1/3 w-40 h-40 rounded-full border border-white/40"></div>
+            </div>
+        </section>
+        
+        <!-- 魔法师社区 -->
+        <section id="community" class="py-20 relative">
+            <div class="container mx-auto px-4">
+                <div class="text-center max-w-3xl mx-auto mb-16">
+                    <div class="inline-block bg-primary/20 px-4 py-1 rounded-full text-primary border border-primary/30 mb-4">
+                        魔法师社区
+                    </div>
+                    <h2 class="text-[clamp(1.8rem,4vw,3rem)] font-magic font-bold mb-6 text-shadow">
+                        加入我们的<span class="text-secondary">魔法大家庭</span>
+                    </h2>
+                    <p class="text-gray-300 text-lg">
+                        在MSpace，你不是一个人在探索魔法世界。加入我们的社区，与来自世界各地的魔法师交流、合作和成长。
+                    </p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+                    <!-- 社区成员1 -->
+                    <div class="bg-dark/50 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 group">
+                        <div class="flex items-center space-x-4 mb-6">
+                            <img src="https://picsum.photos/id/91/100/100" alt="魔法师头像" class="w-16 h-16 rounded-full object-cover border-2 border-primary">
+                            <div>
+                                <h4 class="font-bold text-lg">艾琳娜·晨星</h4>
+                                <p class="text-primary">元素魔法师</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-300 mb-4">
+                            "在MSpace我找到了属于自己的魔法道路，这里的社区氛围非常友好，每个人都乐于分享自己的知识。"
+                        </p>
+                        <div class="flex justify-between items-center">
+                            <div class="flex space-x-1 text-yellow-400">
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                            </div>
+                            <span class="text-gray-400 text-sm">加入 2 年</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 社区成员2 -->
+                    <div class="bg-dark/50 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 group">
+                        <div class="flex items-center space-x-4 mb-6">
+                            <img src="https://picsum.photos/id/92/100/100" alt="魔法师头像" class="w-16 h-16 rounded-full object-cover border-2 border-primary">
+                            <div>
+                                <h4 class="font-bold text-lg">梅林·暗影</h4>
+                                <p class="text-primary">符文大师</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-300 mb-4">
+                            "作为一名符文研究者，MSpace的典籍库为我提供了无尽的灵感。我已经在这里分享了30多篇研究论文。"
+                        </p>
+                        <div class="flex justify-between items-center">
+                            <div class="flex space-x-1 text-yellow-400">
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star-half-o"></i>
+                            </div>
+                            <span class="text-gray-400 text-sm">加入 3 年</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 社区成员3 -->
+                    <div class="bg-dark/50 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 group">
+                        <div class="flex items-center space-x-4 mb-6">
+                            <img src="https://picsum.photos/id/93/100/100" alt="魔法师头像" class="w-16 h-16 rounded-full object-cover border-2 border-primary">
+                            <div>
+                                <h4 class="font-bold text-lg">莉莉丝·月光</h4>
+                                <p class="text-primary">治愈师</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-300 mb-4">
+                            "通过MSpace的魔法任务，我不仅提升了自己的治愈能力，还帮助了许多需要帮助的人。这是一段奇妙的旅程。"
+                        </p>
+                        <div class="flex justify-between items-center">
+                            <div class="flex space-x-1 text-yellow-400">
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star-o"></i>
+                            </div>
+                            <span class="text-gray-400 text-sm">加入 1 年</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 社区数据 -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+                    <div class="bg-dark/50 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+                        <div class="text-4xl font-bold text-primary mb-2" id="memberCount">2,500+</div>
+                        <div class="text-gray-400">活跃魔法师</div>
+                    </div>
+                    <div class="bg-dark/50 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+                        <div class="text-4xl font-bold text-primary mb-2" id="spellCount">1,200+</div>
+                        <div class="text-gray-400">魔法咒语</div>
+                    </div>
+                    <div class="bg-dark/50 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+                        <div class="text-4xl font-bold text-primary mb-2" id="missionCount">500+</div>
+                        <div class="text-gray-400">魔法任务</div>
+                    </div>
+                    <div class="bg-dark/50 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+                        <div class="text-4xl font-bold text-primary mb-2" id="eventCount">120+</div>
+                        <div class="text-gray-400">魔法活动</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 召唤行动 -->
+        <section class="py-20 relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20"></div>
+            <div class="container mx-auto px-4 relative z-10">
+                <div class="max-w-4xl mx-auto bg-dark/80 backdrop-blur-xl rounded-3xl p-8 md:p-12 border border-white/10 shadow-2xl">
+                    <div class="text-center mb-10">
+                        <h2 class="text-[clamp(1.8rem,4vw,3rem)] font-magic font-bold mb-6 text-shadow-glow">
+                            准备好开始你的<span class="text-secondary">魔法之旅</span>了吗？
+                        </h2>
+                        <p class="text-gray-300 text-lg max-w-2xl mx-auto">
+                            加入MSpace，解锁你的魔法潜能，探索神秘的魔法世界，结交志同道合的魔法师朋友。
+                        </p>
+                    </div>
+                    
+                    <div class="flex flex-col md:flex-row gap-4 justify-center">
+                        <a href="#" class="bg-primary hover:bg-primary/80 text-white px-8 py-4 rounded-full text-center transition-all duration-300 hover:shadow-lg hover:shadow-primary/30 text-lg font-medium animate-glow">
+                            立即加入
+                        </a>
+                        <a href="#" class="bg-transparent border border-white/30 hover:border-white text-white px-8 py-4 rounded-full text-center transition-all duration-300 hover:bg-white/10 text-lg font-medium">
+                            了解会员计划
+                        </a>
+                    </div>
+                    
+                    <div class="mt-10 text-center">
+                        <p class="text-gray-400">已有账号？<a href="#" class="text-primary hover:text-secondary transition-colors duration-300">登录</a></p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 背景装饰 -->
+            <div class="absolute top-0 left-0 w-full h-full overflow-hidden opacity-20">
+                <div class="absolute top-0 right-0 w-96 h-96 rounded-full bg-primary/30 blur-3xl"></div>
+                <div class="absolute bottom-0 left-0 w-96 h-96 rounded-full bg-secondary/30 blur-3xl"></div>
+            </div>
+        </section>
+    </main>
+    
+    <!-- 页脚 -->
+    <footer class="bg-dark py-12 border-t border-white/10">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+                <div>
+                    <a href="#" class="flex items-center space-x-2 mb-6">
+                        <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
+                            <span class="text-white font-magic font-bold text-xl">M</span>
+                        </div>
+                        <span class="text-xl font-magic font-bold text-shadow-glow">MSpace</span>
+                    </a>
+                    <p class="text-gray-400 mb-6">
+                        探索魔法世界，释放你的潜能。MSpace是你的专属魔法空间。
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                            <i class="fa fa-facebook"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                            <i class="fa fa-twitter"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                            <i class="fa fa-instagram"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                            <i class="fa fa-youtube-play"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold text-lg mb-6">快速链接</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors duration-300">首页</a></li>
+                        <li><a href="#features" class="text-gray-400 hover:text-primary transition-colors duration-300">魔法功能</a></li>
+                        <li><a href="#experience" class="text-gray-400 hover:text-primary transition-colors duration-300">探索体验</a></li>
+                        <li><a href="#community" class="text-gray-400 hover:text-primary transition-colors duration-300">魔法师社区</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors duration-300">魔法商店</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold text-lg mb-6">支持</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors duration-300">帮助中心</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors duration-300">魔法学院</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors duration-300">常见问题</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors duration-300">联系我们</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors duration-300">隐私政策</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold text-lg mb-6">订阅魔法通讯</h4>
+                    <p class="text-gray-400 mb-4">
+                        获取最新的魔法资讯、活动预告和独家优惠。
+                    </p>
+                    <form class="flex">
+                        <input type="email" placeholder="你的邮箱地址" class="bg-white/10 border border-white/20 rounded-l-full px-4 py-2 w-full focus:outline-none focus:border-primary transition-colors duration-300">
+                        <button type="submit" class="bg-primary hover:bg-primary/80 text-white px-4 rounded-r-full transition-colors duration-300">
+                            <i class="fa fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-500 text-sm mb-4 md:mb-0">
+                    &copy; 2023 MSpace 魔法空间. 保留所有权利.
+                </p>
+                <div class="flex space-x-6">
+                    <a href="#" class="text-gray-500 hover:text-gray-300 text-sm transition-colors duration-300">隐私政策</a>
+                    <a href="#" class="text-gray-500 hover:text-gray-300 text-sm transition-colors duration-300">服务条款</a>
+                    <a href="#" class="text-gray-500 hover:text-gray-300 text-sm transition-colors duration-300">Cookie 政策</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- JavaScript -->
+    <script>
+        // 导航栏滚动效果
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('py-2');
+                navbar.classList.remove('py-4');
+                navbar.classList.add('bg-dark/90');
+                navbar.classList.remove('bg-transparent');
+            } else {
+                navbar.classList.add('py-4');
+                navbar.classList.remove('py-2');
+                navbar.classList.remove('bg-dark/90');
+            }
+        });
+        
+        // 移动端菜单
+        const menuBtn = document.getElementById('menuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        let menuOpen = false;
+        
+        menuBtn.addEventListener('click', () => {
+            if (menuOpen) {
+                mobileMenu.classList.add('-translate-y-full', 'opacity-0', 'pointer-events-none');
+                menuBtn.innerHTML = '<i class="fa fa-bars"></i>';
+            } else {
+                mobileMenu.classList.remove('-translate-y-full', 'opacity-0', 'pointer-events-none');
+                menuBtn.innerHTML = '<i class="fa fa-times"></i>';
+            }
+            menuOpen = !menuOpen;
+        });
+        
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                // 关闭移动菜单（如果打开）
+                if (menuOpen) {
+                    mobileMenu.classList.add('-translate-y-full', 'opacity-0', 'pointer-events-none');
+                    menuBtn.innerHTML = '<i class="fa fa-bars"></i>';
+                    menuOpen = false;
+                }
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 100,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+        
+        // 魔法能量指数图表
+        const ctx = document.getElementById('magicChart').getContext('2d');
+        const magicChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+                datasets: [{
+                    label: '能量指数',
+                    data: [65, 59, 80, 81, 56, 85, 90],
+                    borderColor: '#6D28D9',
+                    backgroundColor: 'rgba(109, 40, 217, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    x: {
+                        display: false
+                    },
+                    y: {
+                        display: false
+                    }
+                },
+                elements: {
+                    point: {
+                        radius: 0
+                    }
+                }
+            }
+        });
+        
+        // 粒子背景效果（简化版）
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles-js');
+            if (!particlesContainer) return;
+            
+            const particleCount = 50;
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                
+                // 随机大小和位置
+                const size = Math.random() * 4 + 1;
+                const posX = Math.random() * 100;
+                const posY = Math.random() * 100;
+                const delay = Math.random() * 5;
+                const duration = Math.random() * 20 + 10;
+                
+                // 随机颜色
+                const colors = ['#6D28D9', '#EC4899', '#06B6D4', '#F5F3FF'];
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                
+                particle.style.cssText = `
+                    position: absolute;
+                    width: ${size}px;
+                    height: ${size}px;
+                    background: ${color};
+                    border-radius: 50%;
+                    top: ${posY}%;
+                    left: ${posX}%;
+                    opacity: 0.5;
+                    animation: float ${duration}s ease-in-out ${delay}s infinite;
+                `;
+                
+                particlesContainer.appendChild(particle);
+            }
+        }
+        
+        // 数字增长动画
+        function animateNumbers() {
+            const counters = [
+                { id: 'memberCount', target: 2500 },
+                { id: 'spellCount', target: 1200 },
+                { id: 'missionCount', target: 500 },
+                { id: 'eventCount', target: 120 }
+            ];
+            
+            counters.forEach(counter => {
+                const element = document.getElementById(counter.id);
+                if (!element) return;
+                
+                let count = 0;
+                const increment = Math.ceil(counter.target / 50);
+                const timer = setInterval(() => {
+                    count += increment;
+                    if (count >= counter.target) {
+                        element.textContent = counter.target + (counter.id === 'memberCount' || counter.id === 'spellCount' ? '+' : '');
+                        clearInterval(timer);
+                    } else {
+                        element.textContent = count + (counter.id === 'memberCount' || counter.id === 'spellCount' ? '+' : '');
+                    }
+                }, 30);
+            });
+        }
+        
+        // 页面加载完成后执行
+        window.addEventListener('load', () => {
+            createParticles();
+            
+            // 当社区部分进入视口时执行数字动画
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        animateNumbers();
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.5 });
+            
+            const communitySection = document.getElementById('community');
+            if (communitySection) {
+                observer.observe(communitySection);
+            }
+        });
+    </script>
+</body>
+</html>
